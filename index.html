@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal do Engenheiro: SQL Server</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-black: #121212;
+            --color-dark-grey: #1e1e1e;
+            --color-blue: #0056b3;
+            --color-blue-light: #e0f0ff;
+            --color-orange: #ff7518;
+            --color-orange-hover: #e65c00;
+            --color-white: #ffffff;
+            --color-text-main: #333333;
+            --color-text-muted: #666666;
+            --color-success: #28a745;
+            --color-error: #dc3545;
+            --sidebar-width: 280px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: #f4f7f6;
+            color: var(--color-text-main);
+            display: flex;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--color-black);
+            color: var(--color-white);
+            height: 100vh;
+            position: fixed;
+            display: flex;
+            flex-direction: column;
+            border-right: 4px solid var(--color-blue);
+        }
+
+        .sidebar-header {
+            padding: 2rem 1.5rem;
+            background-color: var(--color-dark-grey);
+            border-bottom: 1px solid #333;
+            text-align: center;
+        }
+
+        .sidebar-header h2 {
+            color: var(--color-orange);
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-header p {
+            font-size: 0.85rem;
+            color: #aaa;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 1rem 0;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .sidebar-menu li a {
+            display: block;
+            padding: 1rem 1.5rem;
+            color: #ccc;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+
+        .sidebar-menu li a:hover {
+            background-color: var(--color-dark-grey);
+            color: var(--color-white);
+            border-left: 4px solid var(--color-orange);
+        }
+
+        /* --- CONTEÚDO PRINCIPAL --- */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 3rem 4rem;
+            width: calc(100% - var(--sidebar-width));
+            max-width: 1200px;
+        }
+
+        section {
+            background: var(--color-white);
+            padding: 2.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 3rem;
+            border-top: 5px solid var(--color-blue);
+        }
+
+        h2.section-title {
+            color: var(--color-blue);
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #eee;
+        }
+
+        h3 {
+            color: var(--color-black);
+            margin: 1.5rem 0 1rem;
+            font-size: 1.3rem;
+        }
+
+        p, ul, ol {
+            font-size: 1.05rem;
+            line-height: 1.7;
+            margin-bottom: 1rem;
+        }
+
+        ul {
+            padding-left: 1.5rem;
+        }
+
+        /* --- COMPONENTES VISUAIS --- */
+        .alert {
+            background-color: #fff4e6;
+            border-left: 5px solid var(--color-orange);
+            padding: 1.5rem;
+            border-radius: 0 4px 4px 0;
+            margin: 1.5rem 0;
+        }
+
+        .code-container {
+            position: relative;
+            margin: 1.5rem 0;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .code-header {
+            background-color: #333;
+            color: #aaa;
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .copy-btn {
+            background-color: var(--color-orange);
+            color: var(--color-white);
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.8rem;
+            transition: background 0.2s;
+        }
+
+        .copy-btn:hover {
+            background-color: var(--color-orange-hover);
+        }
+
+        pre {
+            background-color: var(--color-dark-grey);
+            color: #d4d4d4;
+            padding: 1.5rem;
+            overflow-x: auto;
+            margin: 0;
+        }
+
+        /* --- ACCORDION --- */
+        .accordion {
+            background-color: var(--color-black);
+            color: var(--color-white);
+            cursor: pointer;
+            padding: 1.2rem;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: 0.3s;
+            border-radius: 4px;
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .active, .accordion:hover {
+            background-color: var(--color-blue);
+        }
+
+        .panel {
+            padding: 0 1.2rem;
+            background-color: var(--color-blue-light);
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            border-left: 3px solid var(--color-blue);
+            margin-bottom: 15px;
+            border-radius: 0 0 4px 4px;
+        }
+
+        /* --- QUIZ STYLES --- */
+        .quiz-question {
+            margin-bottom: 2rem;
+            background: #f9f9f9;
+            padding: 1.5rem;
+            border-radius: 6px;
+            border: 1px solid #e1e1e1;
+        }
+        
+        .quiz-question p {
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .quiz-options label {
+            display: block;
+            padding: 0.8rem;
+            margin-bottom: 0.5rem;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .quiz-options label:hover {
+            background: #f1f8ff;
+        }
+
+        .quiz-options input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        .quiz-btn {
+            background-color: var(--color-blue);
+            color: white;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            display: block;
+            margin: 2rem auto 0;
+            transition: background 0.3s;
+        }
+
+        .quiz-btn:hover {
+            background-color: #004494;
+        }
+
+        #quiz-result {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-top: 2rem;
+            padding: 1.5rem;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .correct-answer {
+            background-color: #d4edda !important;
+            border-color: var(--color-success) !important;
+            color: #155724;
+            font-weight: bold;
+        }
+
+        .wrong-answer {
+            background-color: #f8d7da !important;
+            border-color: var(--color-error) !important;
+            color: #721c24;
+        }
+
+        /* --- RESPONSIVIDADE --- */
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; position: relative; border-right: none; border-bottom: 4px solid var(--color-blue); }
+            .main-content { margin-left: 0; width: 100%; padding: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2>Portal Tech</h2>
+            <p>Laboratório de Banco de Dados</p>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="#introducao">1. O Desafio</a></li>
+            <li><a href="#conceitos">2. Conceitos SQL</a></li>
+            <li><a href="#aquecimento">3. Sandbox (Aquecimento)</a></li>
+            <li><a href="#implementacao">4. Implementação (DER)</a></li>
+            <li><a href="#qna">5. Retrospectiva (Q&A)</a></li>
+            <li><a href="#quiz">6. Teste seus Conhecimentos</a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        
+        <section id="introducao">
+            <h2 class="section-title">1. O Desafio (Introdução)</h2>
+            <p><strong>Cenário:</strong> Você acaba de ser contratado como Engenheiro de Dados em uma EdTech. A equipe de arquitetura desenhou o Diagrama Entidade-Relacionamento (DER) para o novo sistema de gestão escolar.</p>
+            <p>Sua missão é acessar o Microsoft SQL Server Management Studio (SSMS) e transformar esse diagrama em um banco de dados real, operante e seguro, pronto para ser conectado à aplicação web.</p>
+            <div class="alert">
+                <strong>Atenção à Arquitetura:</strong> Em bancos de dados relacionais, a ordem de criação importa. Não podemos criar o "telhado" antes das "paredes". Analise as chaves estrangeiras para definir por onde começar.
+            </div>
+        </section>
+
+        <section id="conceitos">
+            <h2 class="section-title">2. O que é SQL?</h2>
+            <p>A <strong>SQL (Structured Query Language)</strong> é a linguagem universal para bancos de dados relacionais. Ela é dividida em subconjuntos vitais:</p>
+            <ul>
+                <li><strong>DDL (Data Definition Language):</strong> Define estruturas. Ex: <code>CREATE</code>, <code>ALTER</code>, <code>DROP</code>. <em>(Foco deste laboratório)</em></li>
+                <li><strong>DML (Data Manipulation Language):</strong> Manipula dados. Ex: <code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>.</li>
+                <li><strong>DQL (Data Query Language):</strong> Consulta dados. Ex: <code>SELECT</code>.</li>
+                <li><strong>DCL (Data Control Language):</strong> Controla acessos. Ex: <code>GRANT</code>, <code>REVOKE</code>.</li>
+                <li><strong>DTL (Data Transaction Language):</strong> Gerencia transações. Ex: <code>COMMIT</code>, <code>ROLLBACK</code>.</li>
+            </ul>
+        </section>
+
+        <section id="aquecimento">
+            <h2 class="section-title">3. Sandbox (Aquecimento)</h2>
+            <h3>Passo A: Banco de Teste</h3>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>SQL - Criação e Exclusão de Banco</span>
+                    <button class="copy-btn" onclick="copyCode(this)">Copiar Código</button>
+                </div>
+                <pre><code>CREATE DATABASE BancoSandbox;
+GO
+USE BancoSandbox;
+GO
+USE master; 
+GO
+DROP DATABASE BancoSandbox;
+GO</code></pre>
+            </div>
+            <h3>Passo B: Tabela de Teste</h3>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>SQL - DDL Básico</span>
+                    <button class="copy-btn" onclick="copyCode(this)">Copiar Código</button>
+                </div>
+                <pre><code>CREATE DATABASE BancoSandbox;
+GO
+USE BancoSandbox;
+GO
+CREATE TABLE TabelaTeste (
+    id INT,
+    nome NVARCHAR(50)
+);
+GO
+DROP TABLE TabelaTeste;
+GO</code></pre>
+            </div>
+        </section>
+
+        <section id="implementacao">
+            <h2 class="section-title">4. Implementação do DER (Projeto Principal)</h2>
+            <h3>Passo 1: Criação do Banco Oficial</h3>
+            <div class="code-container">
+                <div class="code-header"><span>SQL - Setup</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+                <pre><code>CREATE DATABASE GestaoEscolar;
+GO
+USE GestaoEscolar;
+GO</code></pre>
+            </div>
+
+            <h3>Passo 2: Entidades Fortes (Sem Dependências)</h3>
+            <div class="code-container">
+                <div class="code-header"><span>SQL - Tabelas Base</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+                <pre><code>CREATE TABLE ALUNO (
+    id INT IDENTITY(1,1) CONSTRAINT PK_ALUNO PRIMARY KEY,
+    matricula NVARCHAR(20) CONSTRAINT UQ_ALUNO_MATRICULA UNIQUE NOT NULL,
+    nome NVARCHAR(100) NOT NULL,
+    data_nascimento DATE NOT NULL
+);
+GO
+
+CREATE TABLE DOCENTE (
+    id INT IDENTITY(1,1) CONSTRAINT PK_DOCENTE PRIMARY KEY,
+    registro NVARCHAR(20) CONSTRAINT UQ_DOCENTE_REGISTRO UNIQUE NOT NULL,
+    nome NVARCHAR(100) NOT NULL,
+    especialidade NVARCHAR(100) NOT NULL
+);
+GO
+
+CREATE TABLE CURSO (
+    id INT IDENTITY(1,1) CONSTRAINT PK_CURSO PRIMARY KEY,
+    nome NVARCHAR(100) NOT NULL,
+    descricao NVARCHAR(MAX) NULL,
+    carga_horaria INT NOT NULL
+);
+GO</code></pre>
+            </div>
+
+            <h3>Passo 3: Entidade de Relacionamento (1:N)</h3>
+            <div class="code-container">
+                <div class="code-header"><span>SQL - Dependência Simples</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+                <pre><code>CREATE TABLE TURMA (
+    id INT IDENTITY(1,1) CONSTRAINT PK_TURMA PRIMARY KEY,
+    ano_semestre NVARCHAR(10) NOT NULL,
+    curso_id INT NOT NULL,
+    docente_id INT NOT NULL,
+    CONSTRAINT FK_TURMA_CURSO FOREIGN KEY (curso_id) REFERENCES CURSO(id),
+    CONSTRAINT FK_TURMA_DOCENTE FOREIGN KEY (docente_id) REFERENCES DOCENTE(id)
+);
+GO</code></pre>
+            </div>
+
+            <h3>Passo 4: Tabela Associativa (Resolução N:M)</h3>
+            <div class="code-container">
+                <div class="code-header"><span>SQL - Dependência Complexa</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+                <pre><code>CREATE TABLE ALUNO_TURMA (
+    aluno_id INT NOT NULL,
+    turma_id INT NOT NULL,
+    data_matricula DATE CONSTRAINT DF_ALUNO_TURMA_DATA DEFAULT GETDATE(),
+    nota DECIMAL(5,2) NULL, 
+    faltas INT CONSTRAINT DF_ALUNO_TURMA_FALTAS DEFAULT 0,
+    CONSTRAINT PK_ALUNO_TURMA PRIMARY KEY (aluno_id, turma_id),
+    CONSTRAINT FK_ALUNO_TURMA_ALUNO FOREIGN KEY (aluno_id) REFERENCES ALUNO(id),
+    CONSTRAINT FK_ALUNO_TURMA_TURMA FOREIGN KEY (turma_id) REFERENCES TURMA(id)
+);
+GO</code></pre>
+            </div>
+            
+            <h3>Passo 5: Otimização de Performance</h3>
+            <div class="code-container">
+                <div class="code-header"><span>SQL - Índices</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+                <pre><code>CREATE NONCLUSTERED INDEX IX_TURMA_CURSO_ID ON TURMA(curso_id);
+GO
+CREATE NONCLUSTERED INDEX IX_TURMA_DOCENTE_ID ON TURMA(docente_id);
+GO
+CREATE NONCLUSTERED INDEX IX_ALUNO_TURMA_TURMA_ID ON ALUNO_TURMA(turma_id);
+GO</code></pre>
+            </div>
+        </section>
+
+        <section id="qna">
+            <h2 class="section-title">5. Retrospectiva (Q&A)</h2>
+            <button class="accordion">Por que não criar ALUNO_TURMA antes de ALUNO? <span class="icon">+</span></button>
+            <div class="panel"><p>Porque a tabela ALUNO_TURMA possui dependências físicas (Foreign Keys) que apontam para ALUNO e TURMA. O SGBD bloqueia a criação para garantir a integridade referencial.</p></div>
+
+            <button class="accordion">Qual subconjunto SQL utilizamos hoje? <span class="icon">+</span></button>
+            <div class="panel"><p>Utilizamos a DDL (Data Definition Language) com os comandos CREATE e DROP para estruturar o armazenamento físico.</p></div>
+        </section>
+
+        <section id="quiz">
+            <h2 class="section-title">6. Teste seus Conhecimentos</h2>
+            <p>Responda as 10 questões abaixo baseadas no que fizemos na prática. Clique em "Verificar Respostas" ao final.</p>
+
+            <form id="quizForm">
+                
+                <div class="quiz-question" data-question="1">
+                    <p>1. O que significa a sigla DDL e qual é o seu foco?</p>
+                    <div class="quiz-options">
+                        <label><input type="radio" name="q1" value="wrong"> Data Manipulation Language, focada em alterar registros (linhas).</label>
+                        <label><input type="radio" name="q1" value="correct"> Data Definition Language, focada na criação e alteração de estruturas (tabelas, bancos).</label>
+                        <label><input type="radio" name="q1" value="wrong"> Data Query Language, focada exclusivamente em consultas.</label>
+                    </div>
+                </div>
+
+                <div class="quiz-question" data-question="2">
+                    <p>2. Por que o SQL Server gera um erro se tentarmos criar a tabela TURMA antes da tabela CURSO?</p>
+                    <div class="quiz-options">
+                        <label><input type="radio" name="q2" value="wrong"> Porque o curso tem uma carga horária maior.</label>
+                        <label><input type="radio" name="q2" value="wrong"> Porque a tabela TURMA precisa ter uma chave primária diferente.</label>
+                        <label><input type="radio" name="q2" value="correct"> Porque a tabela TURMA possui uma Chave Estrangeira apontando para CURSO, exigindo que CURSO já exista.</label>
+                    </div>
+                </div>
+
+                <div class="quiz-question" data-question="3">
+                    <p>3. Qual comando nós utilizamos no script DDL para gerar IDs numéricos automáticos nas chaves primárias?</p>
+                    <div class="quiz-options">
+                        <label><input type="radio" name="q3" value="wrong"> AUTO_INCREMENT</label>
+                        <label><input type="radio" name="q3" value="correct"> IDENTITY(1,1)</label>
+                        <label><input type="radio" name="q3" value="wrong"> DEFAULT_ID</label>
+                    </div>
+                </div>
+
+                <div class="quiz-question" data-question="4">
+                    <p>4. Em vez de VARCHAR, o DBA recomendou o uso de NVARCHAR no SQL Server. Qual o motivo principal?</p>
+                    <div class="quiz-options">
+                        <label><input type="radio" name="q4" value="correct"> NVARCHAR suporta padrão Unicode, prevenindo erros de armazenamento com acentuação e caracteres especiais.</label>
+                        <label><input type="radio" name="q4" value="wrong"> NVARCHAR ocupa menos espaço no disco rígido do servidor.</label>
+                        <label><input type="radio" name="q4" value="wrong"> VARCHAR não pode ser usado em tabelas que possuem Chaves Estrangeiras.</label>
+                    </div>
+                </div>
+
+                <div class="quiz-question" data-question="5">
+                    <p>5. Como a modelagem resolveu a cardinalidade de muitos-para-muitos (N:M) entre Alunos e Turmas?</p>
+                    <div class="quiz-options">
+                        <label><input type="radio" name="q5" value="wrong"> Criando uma coluna "turma_id" dentro da tabela ALUNO.</label>
+                        <label><input type="radio" name="q5" value="wrong"> Colocando o ID do aluno repetidas vezes dentro da tabela TURMA.</label>
+                        <label><input type="radio" name="q5" value="correct"> Criando a tabela associativa ALUNO_TURMA para conectar ambos os IDs.</label>
+                    </div>
+                </div>
+
+                <div class="quiz-question" data-question="6">
+                    <p>6. O que faz o comando DROP TABLE?</p>
+                    <div class="quiz-options">
+                        <label><input type="radio" name="q6" value="correct"> Exclui a tabela completamente, incluindo sua estrutura e todos os dados armazenados nela.</label>
+                        <label><input type="radio" name="q6" value="wrong"> Limpa apenas os dados da tabela, mas mantém a estrutura intacta para novos registros.</label>
+                        <label><input type="radio" name="q6" value="wrong"> Remove apenas as chaves estrangeiras da tabela.</label>
+                    </div>
+                </div>
+
+                <div class="quiz-question" data-question="7">
+                    <p>7. No SSMS (SQL Server Management Studio), qual ferramenta usamos para comprovar visualmente que os relacionamentos (FKs) foram criados corretamente?</p>
+                    <div class="quiz-options">
+                        <label><input type="radio" name="q7" value="wrong"> O console de mensagens (Messages).</label>
+                        <label><input type="radio" name="q7" value="correct"> O recurso "Database Diagrams" (Diagramas de Banco de Dados).</label>
+                        <label><input type="radio" name="q7" value="wrong"> O botão "New Query".</label>
+                    </div>
+                </div>
+
+                <div class="quiz-question" data-question="8">
+                    <p>8. Antes de apagar o banco "BancoSandbox", o script incluiu o comando "USE master;". Por que isso foi necessário?</p>
+                    <div class="quiz-options">
+                        <label><input type="radio" name="q8" value="correct"> Porque o SQL Server impede a exclusão de um banco de dados se a sua sessão estiver conectada dentro dele.</label>
+                        <label><input type="radio" name="q8" value="wrong"> Porque o comando DROP só funciona se o banco estiver vazio.</label>
+                        <label><input type="radio" name="q8" value="wrong"> Para garantir que o banco de dados master também seja apagado em segurança.</label>
+                    </div>
+                </div>
+
+                <div class="quiz-question" data-question="9">
+                    <p>9. Ao final da implementação, o DBA incluiu comandos para criar NONCLUSTERED INDEX nas chaves estrangeiras. Qual o benefício disso?</p>
+                    <div class="quiz-options">
+                        <label><input type="radio" name="q9" value="wrong"> Garantir que as chaves estrangeiras não fiquem nulas.</label>
+                        <label><input type="radio" name="q9" value="correct"> Evitar o Full Table Scan, otimizando a performance do banco durante junções (JOINs) ou exclusões em tabelas relacionadas.</label>
+                        <label><input type="radio" name="q9" value="wrong"> Permitir que duas turmas tenham o mesmo curso simultaneamente.</label>
+                    </div>
+                </div>
+
+                <div class="quiz-question" data-question="10">
+                    <p>10. O banco foi estruturado. Se, na próxima aula, precisarmos cadastrar o aluno "Leonardo" e a docente "Dri", qual categoria de comandos SQL utilizaremos?</p>
+                    <div class="quiz-options">
+                        <label><input type="radio" name="q10" value="wrong"> DTL (COMMIT / ROLLBACK).</label>
+                        <label><input type="radio" name="q10" value="wrong"> DDL (CREATE / ALTER).</label>
+                        <label><input type="radio" name="q10" value="correct"> DML (INSERT / UPDATE).</label>
+                    </div>
+                </div>
+
+                <button type="button" class="quiz-btn" onclick="avaliarQuiz()">Verificar Respostas</button>
+                <div id="quiz-result"></div>
+            </form>
+        </section>
+
+    </main>
+
+    <script>
+        // Função de cópia
+        function copyCode(button) {
+            const preElement = button.parentElement.nextElementSibling;
+            const textToCopy = preElement.innerText;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const originalText = button.innerText;
+                button.innerText = '✓ Copiado';
+                button.style.backgroundColor = '#28a745'; 
+                setTimeout(() => {
+                    button.innerText = originalText;
+                    button.style.backgroundColor = 'var(--color-orange)';
+                }, 2000);
+            });
+        }
+
+        // Lógica do Accordion
+        var acc = document.getElementsByClassName("accordion");
+        for (let i = 0; i < acc.length; i++) {
+            acc[i].addEventListener("click", function() {
+                this.classList.toggle("active");
+                var panel = this.nextElementSibling;
+                var icon = this.querySelector('.icon');
+                if (panel.style.maxHeight) {
+                    panel.style.maxHeight = null;
+                    icon.innerText = "+";
+                } else {
+                    panel.style.maxHeight = panel.scrollHeight + "px";
+                    icon.innerText = "-";
+                } 
+            });
+        }
+
+        // Lógica do Quiz
+        function avaliarQuiz() {
+            const form = document.getElementById('quizForm');
+            const questions = document.querySelectorAll('.quiz-question');
+            let acertos = 0;
+            let total = questions.length;
+
+            questions.forEach((q, index) => {
+                const labels = q.querySelectorAll('label');
+                const radios = q.querySelectorAll('input[type="radio"]');
+                let respondida = false;
+
+                // Limpa estilos anteriores
+                labels.forEach(l => l.classList.remove('correct-answer', 'wrong-answer'));
+
+                radios.forEach((radio, i) => {
+                    if (radio.checked) {
+                        respondida = true;
+                        if (radio.value === 'correct') {
+                            acertos++;
+                            labels[i].classList.add('correct-answer');
+                        } else {
+                            labels[i].classList.add('wrong-answer');
+                            // Mostra a certa também
+                            radios.forEach((r, j) => {
+                                if(r.value === 'correct') {
+                                    labels[j].classList.add('correct-answer');
+                                }
+                            });
+                        }
+                    }
+                });
+
+                // Se não respondeu, mostra a certa mesmo assim
+                if (!respondida) {
+                    radios.forEach((r, j) => {
+                        if(r.value === 'correct') {
+                            labels[j].classList.add('correct-answer');
+                        }
+                    });
+                }
+            });
+
+            // Exibir Resultado
+            const resultDiv = document.getElementById('quiz-result');
+            resultDiv.style.display = 'block';
+            let percentage = (acertos / total) * 100;
+            
+            if (percentage === 100) {
+                resultDiv.style.backgroundColor = '#d4edda';
+                resultDiv.style.color = '#155724';
+                resultDiv.innerHTML = `🏆 Perfeito! Você acertou ${acertos} de ${total} (${percentage}%). Pronto para a próxima sprint!`;
+            } else if (percentage >= 70) {
+                resultDiv.style.backgroundColor = '#fff3cd';
+                resultDiv.style.color = '#856404';
+                resultDiv.innerHTML = `👍 Muito bom! Você acertou ${acertos} de ${total} (${percentage}%). Revise os pontos marcados em vermelho.`;
+            } else {
+                resultDiv.style.backgroundColor = '#f8d7da';
+                resultDiv.style.color = '#721c24';
+                resultDiv.innerHTML = `📚 Continue praticando! Você acertou ${acertos} de ${total} (${percentage}%). A prática leva à perfeição!`;
+            }
+        }
+    </script>
+</body>
+</html>
